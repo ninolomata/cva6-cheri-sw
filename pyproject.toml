@@ -1,0 +1,26 @@
+[project]
+name = "cheridemo"
+version = "0.1.0"
+description = "CheriBSD / Bao baremetal demo on CVA6-CHERI (Genesys2 FPGA)"
+requires-python = ">=3.10"
+dependencies = [
+  "typer[all]",
+  "pyyaml",
+  "rich",
+  "psutil",
+]
+
+[project.scripts]
+cheridemo = "cheridemo.cli:app"
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# Only treat the 'cheridemo' directory as a Python package
+packages = ["cheridemo"]
+
+[tool.setuptools.package-data]
+# Optionally include configs/docs in sdist/wheel (not required for editable dev)
+"cheridemo" = []

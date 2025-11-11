@@ -1,0 +1,63 @@
+# -----------------------------
+# Python / Virtual Environment
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+pip-wheel-metadata/
+
+# -----------------------------
+# Editor / OS junk
+# -----------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# -----------------------------
+# Logs / Temp / Outputs
+# -----------------------------
+*.log
+*.tmp
+*.bak
+*.old
+*.out
+*.err
+
+# -----------------------------
+# FPGA / Vivado / Bitstreams
+# -----------------------------
+*.bit
+*.bin
+*.jou
+*.log
+*.rpt
+*.dcp
+*.runs/
+*.srcs/
+*.cache/
+*.xpr
+*.xsa
+*.xdc
+vivado*
+xsim*
+*.wdb
+
+# -----------------------------
+# External dependencies
+# -----------------------------
+external/cache/
+external/toolchains/
+external/cheri-cva6/
+external/cheribuild/
+external/cheribsd/
+external/open

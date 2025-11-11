@@ -1,0 +1,5 @@
+repos:
+
+  cheri-cva6:
+    url: https://github.com/zero-day-labs/cheri-cva6
+    branch: "cheri-cam"

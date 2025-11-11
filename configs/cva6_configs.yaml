@@ -1,0 +1,11 @@
+default: cva6_cheri_1core
+
+configs:
+  cva6_cheri_1core:
+    description: "1-core CVA6-CHERI, sv39, DDR3, Genesys2"
+    board: "genesys2"
+    target: "cv64a6_imafdchzcheri_sv39"
+    make_target: "fpga"
+    bitfile: "corev_apu/fpga/work-fpga/ariane_xilinx.bit"
+    flash_script: "corev_apu/fpga/scripts/program_genesys2.tcl"
+

@@ -1,0 +1,34 @@
+default: cheribsd
+
+targets:
+  cheribsd:
+    kind: cheribsd
+    cheribuild_target: cheribsd-riscv64-purecap
+    sdk_target: sdk-riscv64-purecap
+    # Boot chain bits:
+    opensbi_platform: cva6_cheri_genesys2
+    uboot_defconfig: cva6_cheri_genesys2_defconfig
+    # Cheribuild output names (under ~/cheri/output):
+    kernel_elf: kernel-riscv64-purecap.elf
+    rootfs_img: rootfs-riscv64-purecap.img
+
+  bao-baremetal:
+    kind: bao_bundle
+    bao_repo: bao
+    bao_config: configs/bao/cva6_cheri_genesys2.c
+    guest_repo: baremetal-demo
+    guest_make_target: all
+    opensbi_platform: cva6_cheri_genesys2_bao
+    # Relative to external/ (will be placed under external/<path>):
+    bundle_output: "boot-artifacts/bao_bundle.bin"
+    bao_elf: build/bao.elf
+    guest_elf: build/guest.elf
+
+  baremetal:
+    kind: baremetal
+    app_repo: baremetal-demo
+    app_make_target: all
+    opensbi_platform: cva6_cheri_genesys2_baremetal
+    bundle_output: "boot-artifacts/baremetal_bundle.bin"
+    app_elf: build/app.elf
+
