@@ -4,8 +4,9 @@ import math, os
 
 from rich.console import Console
 from .config import CONFIG
-from .utils import target_output_dir
-from . import run_cmd  # your helper
+from .sw import target_output_dir
+from .utils import run_cmd  # your helper
+import shlex
 
 console = Console()
 
@@ -62,13 +63,13 @@ def format_sd(target_name: str, device: str):
 
     console.print("[bold]Formatting SD[/] "
                   f"(p1: start={FWPAYLOAD_SECTORSTART}, end={FWPAYLOAD_SECTOREND}, type=3000"
-                  + (f"; p2: start={UIMAGE_SECTORSTART}, type=8300" if make_p2 else "")
+                  + (f"; p2: start={UIMAGE_SECTORSTART}, type=8300")
                   + f") on [red]{device}[/]")
 
     # Wipe and partition
-    run_cmd(["sudo", "sgdisk", "--clear", "-g", device])
     cmd = [
         "sudo", "sgdisk",
+        "--clear",
         f"--new=1:{FWPAYLOAD_SECTORSTART}:{FWPAYLOAD_SECTOREND}",
         f"--new=2:{UIMAGE_SECTORSTART}:0",
         "--typecode=1:3000",
