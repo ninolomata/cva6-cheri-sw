@@ -55,9 +55,4 @@ xsim*
 # -----------------------------
 # External dependencies
 # -----------------------------
-external/cache/
-external/toolchains/
-external/cheri-cva6/
-external/cheribuild/
-external/cheribsd/
-external/open
+external/*

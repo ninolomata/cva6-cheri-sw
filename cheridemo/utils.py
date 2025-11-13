@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import os
+import shlex
 from pathlib import Path
 
 from rich.console import Console
@@ -18,7 +20,7 @@ def run_cmd(
 
     If *env* is provided, it is used as the environment for the subprocess.
     """
-    console.print(f"[bold blue]→[/] {' '.join(cmd)}")
+    console.print(f"[bold blue]→[/] {shlex.join(cmd)}")
     if env is not None:
         env_dict: MutableMapping[str, str] = dict(env)
     else:
@@ -45,3 +47,16 @@ def clone_repo(url: str, dest: Path, branch: str | None = None, commit: str | No
     # Submodules (if any)
     run_cmd(["git", "submodule", "update", "--init", "--recursive"], cwd=dest)
 
+def resolve_sdk_root(tgt) -> Path:
+    # Same logic as in build_baremetal_app
+    env_root = os.environ.get("CHERI_SDK_ROOT")
+    if env_root:
+        sdk_source_root = Path(env_root).expanduser().resolve()
+    else:
+        cfg_root = tgt.params.get("sdk_source_root")
+        if cfg_root:
+            sdk_source_root = Path(cfg_root).expanduser().resolve()
+        else:
+            sdk_source_root = Path.home() / "cheri"
+
+    return sdk_source_root / "output" / "sdk"

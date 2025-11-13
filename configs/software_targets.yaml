@@ -1,34 +1,51 @@
 default: cheribsd
 
 targets:
-  cheribsd:
+  cheribsd-demo:
     kind: cheribsd
-    cheribuild_target: cheribsd-riscv64-purecap
-    sdk_target: sdk-riscv64-purecap
-    # Boot chain bits:
-    opensbi_platform: cva6_cheri_genesys2
-    uboot_defconfig: cva6_cheri_genesys2_defconfig
-    # Cheribuild output names (under ~/cheri/output):
-    kernel_elf: kernel-riscv64-purecap.elf
-    rootfs_img: rootfs-riscv64-purecap.img
 
-  bao-baremetal:
-    kind: bao_bundle
-    bao_repo: bao
-    bao_config: configs/bao/cva6_cheri_genesys2.c
-    guest_repo: baremetal-demo
-    guest_make_target: all
-    opensbi_platform: cva6_cheri_genesys2_bao
-    # Relative to external/ (will be placed under external/<path>):
-    bundle_output: "boot-artifacts/bao_bundle.bin"
-    bao_elf: build/bao.elf
-    guest_elf: build/guest.elf
+    # cheribuild targets (what you pass to cheribuild)
+    cheribuild_target: cheribsd-mfs-root-kernel-riscv64-purecap
 
-  baremetal:
+    # Where cheribuild writes artifacts (under $CHERI_SOURCE_ROOT/output)
+    # These are the filenames cheribuild produces by default.
+    kernel_elf: kernel-riscv64-purecap.CHERI-PURECAP-QEMU-MFS-ROOT.full
+
+    # Boot chain repos/configs used to boot CheriBSD via U-Boot
+    opensbi_repo: opensbi
+    opensbi_platform: fpga/ariane          # CVA6 uses the 'fpga/ariane' OpenSBI platform
+    opensbi_flags: "FW_PIC=n FW_OPTIONS=0x2 PLATFORM_RISCV_ABI=lp64 PLATFORM_RISCV_ISA=rv64imacxcheri PLATFORM_RISCV_XLEN=64"
+
+    uboot_repo: u-boot-cva6-cheri
+    uboot_defconfig: openhwgroup_cv64a6_genesysII_defconfig
+    uboot_flags: ""                                  # extra make VAR=... if needed
+
+    # Optional: device tree to drop on the FAT partition for U-Boot
+    # (set to your DTB name/path if you want U-Boot to pass it)
+    fdt_file: cva6_cheri_genesys2.dtb
+
+    # SD image knobs for the U-Boot FAT partition (if you use our sd-image helper)
+    sd_image_size_mb: 512
+
+  baremetal-demo:
     kind: baremetal
-    app_repo: baremetal-demo
+    app_repo: bao-baremetal-guest
     app_make_target: all
-    opensbi_platform: cva6_cheri_genesys2_baremetal
-    bundle_output: "boot-artifacts/baremetal_bundle.bin"
-    app_elf: build/app.elf
+    app_elf: build/cva6/baremetal.elf
+
+    # ABI of the baremetal app: influences OpenSBI make flags
+    # valid values: purecap, hybrid
+    app_abi: purecap
+    app_arch_sub: riscv64xcheri
+    app_platform: cva6
+    app_flags: ""
+    # SDK
+    # Inside $sdk_root (= $source_root/output/sdk), which subdir is the sysroot?
+    sdk_sysroot: "baremetal"
+    # OpenSBI build config
+    opensbi_repo: opensbi
+    opensbi_platform: fpga/ariane
+
+    # These strings are appended to the OpenSBI make command depending on ABI.
+    opensbi_flags: "FW_PIC=n FW_OPTIONS=0x2 PLATFORM_RISCV_ABI=lp64 PLATFORM_RISCV_ISA=rv64imacxcheri PLATFORM_RISCV_XLEN=64"
 

@@ -1,0 +1,17 @@
+# Which SDK profile to use by default
+default: corev-riscv64
+
+profiles:
+  corev-riscv64:
+    description: "CORE-V RISC-V SDK: LLVM, Newlib, baremetal compiler-rt"
+    source_root: "/media/ninolomata/Nino1/CHERI/cva6-cheri-sw/external/cheri"         # default; can be overridden by CHERI_SYS_ROOT
+    enable_hybrid_targets: true
+    cheribuild_targets:
+      - llvm
+      - newlib-baremetal-riscv64
+      - newlib-baremetal-riscv64-purecap
+      - compiler-rt-builtins-baremetal-riscv64
+      - compiler-rt-builtins-baremetal-riscv64-hybrid
+      - compiler-rt-builtins-baremetal-riscv64-purecap
+    extra_args:
+      - "-d"

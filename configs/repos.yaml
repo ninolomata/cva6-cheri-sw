@@ -1,6 +1,22 @@
 repos:
 
   cheri-cva6:
-    url: https://github.com/zero-day-labs/cheri-cva6
+    url: https://github.com/zero-day-labs/cheri-cva6.git
     branch: "cheri-cam"
+
+  opensbi:
+    url: https://github.com/ninolomata/opensbi.git
+    branch: "cva6-cheri"
+
+  bao-baremetal-guest:
+    url: https://github.com/ninolomata/bao-baremetal-guest.git
+    branch: "cva6-cheri"
+  
+  u-boot-cva6-cheri:
+    url: https://github.com/ninolomata/u-boot-cva6-cheri.git
+    branch: "cva6-cheri"
+  
+  cheribuild:
+    url: https://github.com/CTSRD-CHERI/cheribuild.git
+    commit: b529760afc01d9ee55c58287377195fac821ae47
 

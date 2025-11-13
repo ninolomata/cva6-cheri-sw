@@ -59,7 +59,7 @@ You need Python 3.10+.
 
 ```bash
 git clone <this-repo>
-cd cheribsd-on-cva6-cheri-genesys2
+cd cva6-cheri-sw
 
 # (Optional) Create a virtualenv
 python -m venv .venv
@@ -88,12 +88,18 @@ cheridemo clone
 This creates an `external/` directory and clones:
 
 - `cheribuild`
-- `cheri-cva6` (CVA6-CHERI fork)
+- `cheri-cva6` (CVA6-CHERI)
 - `opensbi`
-- `uboot`
-- `bao`
-- `baremetal-demo`
+- `bao-baremetal-guest`
+- `u-boot-cva6-cheri`
 
+## Building SDK
+
+Builds sdk profiles located at `sdk_profiles.yaml`.
+
+```bash
+cheridemo build-sdk
+```
 
 ## Building the FPGA bitstream (Genesys2 only)
 
@@ -113,9 +119,6 @@ cheridemo build-fpga
 cheridemo build-fpga --config cva6_cheri_1core
 ```
 
-> Edit `cheridemo/fpga.py` and `configs/cva6_configs.yaml` to match your actual
-> CVA6-CHERI build (board name, config file, make target, bitfile path).
-
 
 ### Flashing the FPGA
 
@@ -126,26 +129,20 @@ different tools (Vivado, openFPGALoader, etc.):
 cheridemo flash-fpga --config cva6_cheri_1core
 ```
 
-Update `cheridemo/fpga.py` to call your preferred tool with the correct bitstream
-(or SPI flash image).
-
-
-## CheriBSD path (OpenSBI + U-Boot + SD rootfs)
+## CheriBSD Demo (OpenSBI + U-Boot + SD rootfs)
 
 This software target is called **`cheribsd`** in `software_targets.yaml`.
 
-### 1. Build the CHERI SDK + CheriBSD + boot chain
+### 1. Build the CheriBSD + boot chain
 
 ```bash
-cheridemo build-sdk            # optional; build-sw will also build the SDK
-cheridemo build-sw --target cheribsd
+cheridemo build-sw --t cheribsd-demo
 ```
 
 This does three things:
 
-1. Builds the RISC-V CHERI SDK via cheribuild (`sdk-riscv64-purecap`)
-2. Builds CheriBSD for RISC-V CHERI (`cheribsd-riscv64-purecap`)
-3. Builds the **boot chain**:
+1. Builds CheriBSD for RISC-V CHERI (`cheribsd-mfs-root-kernel-riscv64-purecap`)
+2. Builds the **boot chain**:
    - U-Boot for your CVA6-CHERI Genesys2 platform
    - OpenSBI using U-Boot as the `FW_PAYLOAD_PATH`, producing a single
      `fw_payload.bin` that you can use as a ROM/SPI flash image in your FPGA design
@@ -153,13 +150,13 @@ This does three things:
 
 ### 2. Prepare the SD card
 
-Cheribuild produces a CheriBSD rootfs image (by default under `~/cheri/output/`).
+Cheribuild produces a CheriBSD U-Boot image (by default under `~/cheri/output/cheribsd-demo`).
 The `software_targets.yaml` entry for `cheribsd` tells the tool which image to use.
 
 Write it to an SD card (**this will erase the card**):
 
 ```bash
-cheridemo prepare-sd --device /dev/sdX --target cheribsd
+cheridemo prepare-sd --device /dev/sdX --t cheribsd-demo
 ```
 
 ### 3. Boot chain diagram
@@ -174,66 +171,23 @@ OpenSBI (fw_payload.bin)
          ↓
     U-Boot
       └─ loads kernel + FDT from SD
-           and mounts CheriBSD rootfs from SD
               ↓
         CheriBSD (FreeBSD with CHERI)
 ```
 
+## Baremetal Application Demo (OpenSBI + baremetal bundle)
 
-## Bao path (OpenSBI + Bao + baremetal guest bundle)
-
-This software target is called **`bao-baremetal`** in `software_targets.yaml`.
-
-### 1. Build the bundle
+This software target is called **`baremetal-demo`**.
 
 ```bash
-cheridemo build-sw --target bao-baremetal
-```
-
-This:
-
-1. Builds the **baremetal guest** in `external/baremetal-demo` (e.g., a small
-   CHERI-aware application)
-2. Builds the **Bao hypervisor** using a configuration file that describes your
-   CVA6-CHERI / Genesys2 platform and the guest layout
-3. Builds **OpenSBI** using Bao as `FW_PAYLOAD_PATH`, producing one monolithic
-   `bao_bundle.bin` that contains:
-   - OpenSBI
-   - Bao hypervisor
-   - embedded baremetal guest image (according to your Bao config)
-
-You can then use this bundle as the ROM/SPI flash contents in your FPGA flow.
-
-### 2. Boot chain diagram
-
-Bao bundle path:
-
-```text
-Reset
-  ↓
-OpenSBI (bao_bundle.bin)
-  └─ payload: Bao hypervisor
-         ↓
-       Bao
-        └─ boots baremetal guest
-              ↓
-      Baremetal guest (no OS, runs on CVA6-CHERI)
-```
-
-
-## Baremetal path (OpenSBI + baremetal bundle)
-
-This software target is called **`baremetal`**.
-
-```bash
-cheridemo build-sw --target baremetal
+cheridemo build-sw --t baremetal-demo
 ```
 
 This:
 
 1. Builds a baremetal app in `external/baremetal-demo`
 2. Builds OpenSBI with that app as `FW_PAYLOAD_PATH`, producing
-   `baremetal_bundle.bin`
+   `opensbi-fw.bin`
 
 Boot chain:
 
@@ -280,4 +234,3 @@ From here you can:
 - Pin concrete commits in `configs/repos.yaml`
 - Point `software_targets.yaml` to your actual Bao config files and baremetal ELF paths
 - Add more CVA6 configs (e.g., 2-core, different memory maps)
-

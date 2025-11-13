@@ -16,12 +16,18 @@ EXTERNAL_DIR = REPO_ROOT / "external"
 CACHE_DIR = EXTERNAL_DIR / "cache"
 
 # Default install root for the downloaded toolchain
-DEFAULT_INSTALL_ROOT = EXTERNAL_DIR / "toolchains" / "corev-gcc-ubuntu2204"
+DEFAULT_RISCV_COREV_TOOLCHAIN_ROOT = EXTERNAL_DIR / "toolchains" / "corev-gcc-ubuntu2204"
+DEFAULT_RISCV_LINUX_TOOLCHAIN_INSTALL_ROOT = EXTERNAL_DIR / "toolchains" / "riscv64-linux-gcc-ubuntu2204"
 
 # CORE-V GCC toolchain from Embecosm (Ubuntu 22.04)
 EMBECOSM_COREV_GCC_URL = (
     "https://buildbot.embecosm.com/job/corev-gcc-ubuntu2204/47/"
     "artifact/corev-openhw-gcc-ubuntu2204-20240530.tar.gz"
+)
+
+EMBECOSM_LINUX_GCC_URL = (
+    "https://buildbot.embecosm.com/job/riscv64-linux-gcc-ubuntu2204/20/"
+    "artifact/riscv64-embecosm-linux-gcc-ubuntu2204-20240407.tar.gz"
 )
 
 
@@ -35,6 +41,7 @@ def _looks_like_riscv_root(root: Path) -> bool:
         "riscv32-corev-elf-gcc",
         "riscv64-unknown-elf-gcc",
         "riscv32-unknown-elf-gcc",
+        "riscv64-unknown-linux-gnu-gcc",
     ]
     return any((bin_dir / name).exists() for name in candidates)
 
@@ -68,6 +75,35 @@ def _download_embecosm_corev(dest_root: Path) -> Path:
 
     return dest_root
 
+def _download_embecosm_linux(dest_root: Path) -> Path:
+    """
+    Download and extract the Embecosm Linux toolchain into dest_root.
+
+    Returns the directory that should be used as $RISCV.
+    """
+    dest_root = dest_root.expanduser().resolve()
+    dest_root.mkdir(parents=True, exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    tar_path = CACHE_DIR / "riscv64-embecosm-linux-gcc-ubuntu2204-20240407.tar.gz"
+
+    console.print("[bold yellow]No local RISCV Linux toolchain found, fetching Linux GCC from Embecosm…[/]")
+    console.print(f"  URL: [cyan]{EMBECOSM_LINUX_GCC_URL}[/]")
+    console.print(f"  → [magenta]{tar_path}[/]")
+
+    urllib.request.urlretrieve(EMBECOSM_LINUX_GCC_URL, tar_path)
+
+    console.print(f"[bold]Extracting toolchain[/] → [magenta]{dest_root}[/]")
+    with tarfile.open(tar_path, "r:gz") as tf:
+        tf.extractall(dest_root)
+
+    # Some tarballs contain a top-level directory; pick the one that looks like a toolchain root
+    for candidate in dest_root.iterdir():
+        if candidate.is_dir():
+            return candidate
+
+    return dest_root
+
 
 def ensure_riscv_toolchain() -> Path:
     """
@@ -87,13 +123,44 @@ def ensure_riscv_toolchain() -> Path:
         console.print(f"[yellow]RISCV set but not valid:[/] {root}")
 
     # Already installed locally?
-    if DEFAULT_INSTALL_ROOT.exists():
-        for c in DEFAULT_INSTALL_ROOT.iterdir():
+    if DEFAULT_RISCV_COREV_TOOLCHAIN_ROOT.exists():
+        for c in DEFAULT_RISCV_COREV_TOOLCHAIN_ROOT.iterdir():
             if c.is_dir() and _looks_like_riscv_root(c):
                 console.print(f"[green]Using cached CORE-V toolchain at[/] [magenta]{c}[/]")
                 return c
 
     # Download fresh
-    installed_root = _download_embecosm_corev(DEFAULT_INSTALL_ROOT)
+    installed_root = _download_embecosm_corev(DEFAULT_RISCV_COREV_TOOLCHAIN_ROOT)
+    console.print(f"[green]Installed CORE-V RISCV toolchain at[/] [magenta]{installed_root}[/]")
+    return installed_root
+
+def ensure_riscv_linux_toolchain() -> Path:
+    """
+    Ensure a RISC-V Linux toolchain exists and return its root directory.
+
+    Priority:
+      1. If $RISCV_LINUX_TOOLCHAIN is set and valid → use it.
+      2. If external/toolchains/linux-gcc-ubuntu2204 exists → reuse it.
+      3. Otherwise → download from Embecosm.
+    """
+    env_riscv = os.environ.get("RISCV_LINUX_TOOLCHAIN")
+    if env_riscv:
+        if _looks_like_riscv_root(root):
+          root = Path(env_riscv).expanduser().resolve()
+          console.print(f"[green]Using existing RISCV Linux toolchain at[/] [magenta]{root}[/]")
+          return root
+        else:
+          console.print(f"[yellow]RISCV set but not valid:[/] {root}")
+
+
+    # Already installed locally?
+    if DEFAULT_RISCV_LINUX_TOOLCHAIN_INSTALL_ROOT.exists():
+        for c in DEFAULT_RISCV_LINUX_TOOLCHAIN_INSTALL_ROOT.iterdir():
+            if c.is_dir() and _looks_like_riscv_root(c):
+                console.print(f"[green]Using cached CORE-V toolchain at[/] [magenta]{c}[/]")
+                return c
+
+    # Download fresh
+    installed_root = _download_embecosm_linux(DEFAULT_RISCV_LINUX_TOOLCHAIN_INSTALL_ROOT)
     console.print(f"[green]Installed CORE-V RISCV toolchain at[/] [magenta]{installed_root}[/]")
     return installed_root

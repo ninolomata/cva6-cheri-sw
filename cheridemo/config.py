@@ -40,6 +40,14 @@ class SoftwareTarget:
     kind: str
     params: dict
 
+@dataclass
+class SdkProfile:
+    name: str
+    description: str
+    source_root: str | None
+    enable_hybrid_targets: bool
+    cheribuild_targets: list[str]
+    extra_args: list[str]
 
 class Config:
     def __init__(self):
@@ -48,6 +56,8 @@ class Config:
         self._cva6_default: str | None = None
         self._sw_targets: dict[str, SoftwareTarget] | None = None
         self._sw_default: str | None = None
+        self._sdk_default: str | None = None
+        self._sdk_profiles: dict[str, SdkProfile] | None = None
 
     # --- Repos ---
 
@@ -132,6 +142,36 @@ class Config:
             raise SystemExit(f"Unknown software target: {name}")
         return tgt
 
+    @property
+    def sdk_default_name(self) -> str:
+        if self._sdk_default is None:
+            data = yaml.safe_load((CONFIG_DIR / "sdk_profiles.yaml").read_text())
+            self._sdk_default = data["default"]
+        return self._sdk_default
+
+    @property
+    def sdk_profiles(self) -> dict[str, SdkProfile]:
+        if self._sdk_profiles is None:
+            data = yaml.safe_load((CONFIG_DIR / "sdk_profiles.yaml").read_text())
+            self._sdk_profiles = {}
+            for name, prof in data["profiles"].items():
+                self._sdk_profiles[name] = SdkProfile(
+                    name=name,
+                    description=prof.get("description", ""),
+                    source_root=prof.get("source_root"),
+                    enable_hybrid_targets=bool(prof.get("enable_hybrid_targets", True)),
+                    cheribuild_targets=list(prof.get("cheribuild_targets", [])),
+                    extra_args=list(prof.get("extra_args", [])),
+                )
+        return self._sdk_profiles
+
+    def get_sdk_profile(self, name: str | None) -> SdkProfile:
+        if name is None:
+            name = self.sdk_default_name
+        prof = self.sdk_profiles.get(name)
+        if prof is None:
+            raise SystemExit(f"Unknown SDK profile: {name}")
+        return prof
 
 CONFIG = Config()
 EXTERNAL = BASE_DIR / "external"

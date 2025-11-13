@@ -1,1 +1,1 @@
-"""CheriBSD / Bao baremetal demo on CVA6-CHERI (Genesys2)."""
+"""CVA6-CHERI Demos (Genesys2)."""

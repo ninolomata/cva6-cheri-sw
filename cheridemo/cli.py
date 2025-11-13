@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import typer
 from rich.console import Console
+from pathlib import Path
 
-from . import build, fpga, sw, sdcard
+from . import build, fpga, sw, sdcard, boot
 from .config import CONFIG
 
 app = typer.Typer(help="CheriBSD / Bao baremetal demo on CVA6-CHERI (Genesys2 FPGA)")
@@ -46,26 +47,30 @@ def list_sw():
             console.print(f"      repo: {tgt.params['app_repo']}")
 
 
-@app.command("build-sdk")
-def build_sdk(
-    jobs: int = typer.Option(8, "--jobs", "-j", help="Number of parallel jobs"),
-):
-    """Build CHERI SDK with cheribuild (for CheriBSD)."""
-    build.build_sdk(jobs)
-
-
 @app.command("build-sw")
 def build_sw_cmd(
     target: str = typer.Option(
         None,
         "--target",
         "-t",
-        help="Software target name (see 'cheridemo list-sw')",
+        help="Software target name (see 'cheridemo list-sw'). "
+             "If omitted, uses the default from the config.",
     ),
-    jobs: int = typer.Option(8, "--jobs", "-j", help="Number of parallel jobs"),
+    jobs: int = typer.Option(
+        8,
+        "--jobs",
+        "-j",
+        help="Number of parallel jobs for the build.",
+    ),
 ):
-    """Build a software stack (CheriBSD, Bao+baremetal bundle, or baremetal bundle)."""
-    sw.build_sw(target_name=target, jobs=jobs)
+    """
+    Build a software stack:
+
+      - For kind 'baremetal': baremetal app + OpenSBI (with payload),
+        artifacts in external/output/<target-name>/
+      - Other kinds: behavior depends on sw.build_sw implementation.
+    """
+    boot.build_sw(target_name=target, jobs=jobs)
 
 
 @app.command("build-fpga")
@@ -94,20 +99,36 @@ def flash_fpga_cmd(
     """Flash the Genesys2 board with the built bitstream (placeholder command)."""
     fpga.flash_fpga(config_name=config)
 
-
-@app.command("prepare-sd")
-def prepare_sd_cmd(
-    device: str = typer.Option(..., "--device", help="/dev/sdX (BE VERY CAREFUL)"),
-    target: str = typer.Option(
-        "cheribsd",
-        "--target",
-        "-t",
-        help="Software target that uses SD card (currently only 'cheribsd')",
-    ),
+@app.command("format-sd")
+def format_sd_cmd(
+    device: str = typer.Option(..., "--device", help="Disk node, e.g. /dev/mmcblk0 or /dev/sdX"),
+    target: str = typer.Option(..., "--target", "-t", help="Software target (e.g., baremetal-demo, cheribsd-demo)"),
 ):
-    """Write a CheriBSD SD card image to a physical SD card."""
-    sdcard.prepare_sd_for(target_name=target, device=device)
+    """Partition SD like cva6-sdk (p1 sized to fw_payload.bin; p2 at 512M for CheriBSD)."""
+    from . import sdcard
+    sdcard.format_sd(target_name=target, device=device)
 
+@app.command("flash-sd")
+def flash_sd_cmd(
+    device: str = typer.Option(..., "--device", help="Disk node, e.g. /dev/mmcblk0 or /dev/sdX"),
+    target: str = typer.Option(..., "--target", "-t", help="Software target (e.g., baremetal-demo, cheribsd-demo)"),
+):
+    """dd the payload(s) to the SD partitions (p1=fw_payload, p2=UImage if CheriBSD)."""
+    from . import sdcard
+    sdcard.flash_sd(target_name=target, device=device)
+
+
+@app.command("build-sdk")
+def build_sdk_cmd(
+    profile: str = typer.Option(
+        None,
+        help="SDK profile name (see configs/sdk_profiles.yaml). "
+             "Defaults to the 'default' profile in that file.",
+    ),
+    jobs: int = typer.Option(16, "--jobs", "-j", help="Parallel build jobs for cheribuild."),
+):
+    """Build the CHERI/CORE-V SDK via cheribuild using a named profile."""
+    build.build_sdk(profile_name=profile, jobs=jobs)
 
 if __name__ == "__main__":
     app()
