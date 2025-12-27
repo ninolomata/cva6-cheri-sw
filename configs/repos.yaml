@@ -18,5 +18,5 @@ repos:
   
   cheribuild:
     url: https://github.com/CTSRD-CHERI/cheribuild.git
-    commit: b529760afc01d9ee55c58287377195fac821ae47
+    branch: "main"
 
