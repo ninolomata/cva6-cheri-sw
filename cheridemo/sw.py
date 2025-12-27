@@ -168,7 +168,6 @@ def build_opensbi(
     env["AR"] = str(sdk_bin / "llvm-ar")
     env["LD"] = str(sdk_bin / "ld.lld")
     env["OBJCOPY"] = str(sdk_bin / "llvm-objcopy")
-    env["LLVM"] = "" # to disable clang version check in OpenSBI
 
     console.print(f"  Using CC = [magenta]{env['CC']}[/]")
     console.print(f"  Using AR = [magenta]{env['AR']}[/]")
