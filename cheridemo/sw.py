@@ -174,6 +174,7 @@ def build_opensbi(
     console.print(f"  Using AR = [magenta]{env['AR']}[/]")
     console.print(f"  Using LD = [magenta]{env['LD']}[/]")
     console.print(f"  Using OBJCOPY = [magenta]{env['OBJCOPY']}[/]")
+    console.print(f"  Using PAYLOAD = [magenta]{env['FW_PAYLOAD_PATH']}[/]")
 
     cmd = [
         "make",
