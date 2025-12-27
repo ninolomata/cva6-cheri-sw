@@ -14,7 +14,12 @@ targets:
     # Boot chain repos/configs used to boot CheriBSD via U-Boot
     opensbi_repo: opensbi
     opensbi_platform: fpga/ariane          # CVA6 uses the 'fpga/ariane' OpenSBI platform
-    opensbi_flags: "FW_PIC=n FW_OPTIONS=0x2 PLATFORM_RISCV_ABI=lp64 PLATFORM_RISCV_ISA=rv64imacxcheri PLATFORM_RISCV_XLEN=64"
+    opensbi_flags:
+      - FW_PIC=n
+      - FW_OPTIONS=0x2
+      - PLATFORM_RISCV_ABI=lp64
+      - PLATFORM_RISCV_ISA=rv64imacxcheri
+      - PLATFORM_RISCV_XLEN=64
 
     uboot_repo: u-boot-cva6-cheri
     uboot_defconfig: openhwgroup_cv64a6_genesysII_defconfig
@@ -47,5 +52,9 @@ targets:
     opensbi_platform: fpga/ariane
 
     # These strings are appended to the OpenSBI make command depending on ABI.
-    opensbi_flags: "FW_PIC=n FW_OPTIONS=0x2 PLATFORM_RISCV_ABI=lp64 PLATFORM_RISCV_ISA=rv64imacxcheri PLATFORM_RISCV_XLEN=64"
-
+    opensbi_flags:
+      - FW_PIC=n
+      - FW_OPTIONS=0x2
+      - PLATFORM_RISCV_ABI=lp64
+      - PLATFORM_RISCV_ISA=rv64imacxcheri
+      - PLATFORM_RISCV_XLEN=64

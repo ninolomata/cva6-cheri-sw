@@ -179,7 +179,7 @@ def build_opensbi(
     cmd = [
         "make",
         f"PLATFORM={opensbi_platform}",
-        opensbi_flags,
+        *opensbi_flags,
         f"-j{jobs}",
     ]
 
