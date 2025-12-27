@@ -295,6 +295,7 @@ def build_baremetal_app(tgt, jobs: int = 8, out_dir: Path | None = None):
         "make",
         f"PLATFORM={app_platform}",
         f"ARCH_SUB={app_arch_sub}",
+        f"SINGLE_CORE=y",
         app_target,
         f"-j{jobs}",
     ]
