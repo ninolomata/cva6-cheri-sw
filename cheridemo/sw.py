@@ -89,6 +89,7 @@ def build_cheribsd(
         str(cheribuild_cmd),
         "--source-root", str(sdk_source_root),
         cheribuild_target, 
+        "--cheribsd/build-nocaprevoke-kernel",
         "-d", 
         f"-j{jobs}"
     ]

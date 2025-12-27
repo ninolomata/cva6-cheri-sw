@@ -9,7 +9,7 @@ targets:
 
     # Where cheribuild writes artifacts (under $CHERI_SOURCE_ROOT/output)
     # These are the filenames cheribuild produces by default.
-    kernel_elf: kernel-riscv64-purecap.CHERI-PURECAP-QEMU-MFS-ROOT.full
+    kernel_elf: kernel-riscv64-purecap.CHERI-PURECAP-NOCAPREVOKE-QEMU-MFS-ROOT
 
     # Boot chain repos/configs used to boot CheriBSD via U-Boot
     opensbi_repo: opensbi

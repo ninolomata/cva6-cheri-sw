@@ -60,13 +60,15 @@ def make_cheribsd_uimage(tgt, kernel_src: Path, out_name: str = "CheriBSD",
     cmd = [
         str(mkimage_path),
         "-A", "riscv",
-        "-O", "freebsd",
+        "-O", "linux",
         "-T", "kernel",
         "-a", load_addr,
         "-e", entry_addr,
     ]
     if gzip:
         cmd += ["-C", "gzip"]
+    else:
+        cmd += ["-C", "none"]
     cmd += ["-n", "\"CheriBSD\""]
     cmd += ["-d", str(kernel_src), str(out_path)]
     console.print(f"[bold]mkimage[/] → {' '.join(cmd)}")
@@ -132,7 +134,7 @@ def package_cheribsd_demo_bundle(
     load_addr: str = "0x80200000",
     entry_addr: str = "0x80200000",
     use_bin: bool = True,
-    gzip: bool = True,
+    gzip: bool = False,
 ):
     """
     Pipeline:
